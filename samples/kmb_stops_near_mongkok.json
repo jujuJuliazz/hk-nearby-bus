@@ -1,0 +1,245 @@
+{
+  "n": 331,
+  "data": [
+    {
+      "stop": "60F1DDDCB555E319",
+      "name_en": "DIOCESAN BOYS' SCHOOL, PRINCE EDWARD ROAD WEST",
+      "name_tc": "拔萃男書院,太子道西 (KC743)",
+      "name_sc": "拔萃男书院,太子道西 (KC743)",
+      "lat": "22.324949",
+      "long": "114.174484"
+    },
+    {
+      "stop": "65B934D14EA190F1",
+      "name_en": "HEEP WOH PRIMARY SCHOOL, MOKO (MK750)",
+      "name_tc": "協和小學, MOKO (MK750)",
+      "name_sc": "协和小学, MOKO (MK750)",
+      "lat": "22.324613",
+      "long": "114.172570"
+    },
+    {
+      "stop": "F7CAA2D4FF9D61F7",
+      "name_en": "PRINCE EDWARD STATION, FLOWER MARKET (MK751)",
+      "name_tc": "太子站, 旺角花墟 (MK751)",
+      "name_sc": "太子站, 旺角花墟 (MK751)",
+      "lat": "22.324126",
+      "long": "114.169855"
+    },
+    {
+      "stop": "6AB438AD3AE100DD",
+      "name_en": "NELSON STREET MONG KOK (MK515)",
+      "name_tc": "旺角奶路臣街 (MK515)",
+      "name_sc": "旺角奶路臣街 (MK515)",
+      "lat": "22.318603",
+      "long": "114.169603"
+    },
+    {
+      "stop": "456320D47FFB5B1A",
+      "name_en": "SOY STREET MONG KOK (MK523)",
+      "name_tc": "旺角豉油街 (MK523)",
+      "name_sc": "旺角豉油街 (MK523)",
+      "lat": "22.316174",
+      "long": "114.170140"
+    },
+    {
+      "stop": "01A56227D21AFB04",
+      "name_en": "CHEUNG SHA STREET MONG KOK, SINO CENTRE (MK161)",
+      "name_tc": "旺角長沙街,信和中心 (MK161)",
+      "name_sc": "旺角长沙街,信和中心 (MK161)",
+      "lat": "22.315797",
+      "long": "114.169950"
+    },
+    {
+      "stop": "221A18C37331E6FD",
+      "name_en": "NELSON STREET MONG KOK (MK174)",
+      "name_tc": "旺角奶路臣街 (MK174)",
+      "name_sc": "旺角奶路臣街 (MK174)",
+      "lat": "22.318521",
+      "long": "114.169408"
+    },
+    {
+      "stop": "3C50188583DABFC8",
+      "name_en": "HK & KLN CHIU CHOW SCHOOL, SAI YEE ST (MK350)",
+      "name_tc": "港九潮州公學 洗衣街 (MK350)",
+      "name_sc": "港九潮州公学 洗衣街 (MK350)",
+      "lat": "22.321874",
+      "long": "114.171093"
+    },
+    {
+      "stop": "EA59A314ABB9386E",
+      "name_en": "QUEEN ELIZABETH SCHOOL, SAI YEE ST (MK351)",
+      "name_tc": "伊利沙伯中學 洗衣街 (MK351)",
+      "name_sc": "伊利沙伯中学 洗衣街 (MK351)",
+      "lat": "22.323508",
+      "long": "114.170771"
+    },
+    {
+      "stop": "1D70AD74F1C97404",
+      "name_en": "PRINCE EDWARD STATION, MONG KOK POLICE STATION",
+      "name_tc": "太子站, 旺角警署 (MK356)",
+      "name_sc": "太子站, 旺角警署 (MK356)",
+      "lat": "22.324645",
+      "long": "114.169348"
+    },
+    {
+      "stop": "6045969736940272",
+      "name_en": "FA HUI PARK (MK234)",
+      "name_tc": "花墟公園 (MK234)",
+      "name_sc": "花墟公园 (MK234)",
+      "lat": "22.326866",
+      "long": "114.173105"
+    },
+    {
+      "stop": "AB0E13408BFA1055",
+      "name_en": "PRINCE EDWARD STATION, MONG KOK POLICE STATION",
+      "name_tc": "太子站, 旺角警署 (MK357)",
+      "name_sc": "太子站, 旺角警署 (MK357)",
+      "lat": "22.324645",
+      "long": "114.169348"
+    },
+    {
+      "stop": "6E2A7A2CD29F9216",
+      "name_en": "NELSON STREET MONG KOK (MK169)",
+      "name_tc": "旺角奶路臣街 (MK169)",
+      "name_sc": "旺角奶路臣街 (MK169)",
+      "lat": "22.317813",
+      "long": "114.169549"
+    },
+    {
+      "stop": "30FEA8A7071EDE48",
+      "name_en": "BUTE STREET, PIONEER CENTRE (MK181)",
+      "name_tc": "弼街,始創中心 (MK181)",
+      "name_sc": "弼街,始创中心 (MK181)",
+      "lat": "22.321778",
+      "long": "114.168699"
+    },
+    {
+      "stop": "557B9185722A07DB",
+      "name_en": "TONG MI ROAD MONG KOK (MK306)",
+      "name_tc": "旺角塘尾道 (MK306)",
+      "name_sc": "旺角塘尾道 (MK306)",
+      "lat": "22.324403",
+      "long": "114.165727"
+    },
+    {
+      "stop": "DBAAC5A97DAFD138",
+      "name_en": "SHEK KIP MEI STREET (SS311)",
+      "name_tc": "石硤尾街 (SS311)",
+      "name_sc": "石硖尾街 (SS311)",
+      "lat": "22.326937",
+      "long": "114.162385"
+    },
+    {
+      "stop": "6A6E44D4207221C1",
+      "name_en": "KWEILIN STREET SHAM SHUI PO (SS312)",
+      "name_tc": "深水埗桂林街 (SS312)",
+      "name_sc": "深水埗桂林街 (SS312)",
+      "lat": "22.328589",
+      "long": "114.160248"
+    },
+    {
+      "stop": "6156B488BEB726C6",
+      "name_en": "SHAM SHUI PO PARK (SS313)",
+      "name_tc": "深水埗公園 (SS313)",
+      "name_sc": "深水埗公园 (SS313)",
+      "lat": "22.330675",
+      "long": "114.157715"
+    },
+    {
+      "stop": "A8762A74241E8027",
+      "name_en": "LAI KOK ESTATE (SS680)",
+      "name_tc": "麗閣邨 (SS680)",
+      "name_sc": "丽阁邨 (SS680)",
+      "lat": "22.333118",
+      "long": "114.155983"
+    },
+    {
+      "stop": "E3B464760B6ADF30",
+      "name_en": "LAI KOK ESTATE (SS262)",
+      "name_tc": "麗閣邨 (SS262)",
+      "name_sc": "丽阁邨 (SS262)",
+      "lat": "22.333467",
+      "long": "114.156602"
+    },
+    {
+      "stop": "ADA4B4F4B604885B",
+      "name_en": "LAI LO HOUSE LAI KOK ESTATE (SS633)",
+      "name_tc": "麗閣邨麗蘿樓 (SS633)",
+      "name_sc": "丽阁邨丽萝楼 (SS633)",
+      "lat": "22.331656",
+      "long": "114.156667"
+    },
+    {
+      "stop": "2CAFD3D60CAA7F5B",
+      "name_en": "PEI HO STREET SHAM SHUI PO (SS637)",
+      "name_tc": "深水埗北河街 (SS637)",
+      "name_sc": "深水埗北河街 (SS637)",
+      "lat": "22.328783",
+      "long": "114.160429"
+    },
+    {
+      "stop": "B577AC1835FA7995",
+      "name_en": "SHEK KIP MEI STREET (SS641)",
+      "name_tc": "石硤尾街 (SS641)",
+      "name_sc": "石硖尾街 (SS641)",
+      "lat": "22.327234",
+      "long": "114.162427"
+    },
+    {
+      "stop": "2F4939964761E1FF",
+      "name_en": "POPLAR STREET SHAM SHUI PO (SS645)",
+      "name_tc": "深水埗白楊街 (SS645)",
+      "name_sc": "深水埗白杨街 (SS645)",
+      "lat": "22.324793",
+      "long": "114.165560"
+    },
+    {
+      "stop": "1030A4E612B75901",
+      "name_en": "ARRAN STREET MONG KOK (MK651)",
+      "name_tc": "旺角鴉蘭街 (MK651)",
+      "name_sc": "旺角鸦兰街 (MK651)",
+      "lat": "22.323315",
+      "long": "114.167469"
+    },
+    {
+      "stop": "300D1812E3A085C3",
+      "name_en": "PEACE AVENUE (KC615)",
+      "name_tc": "太平道 (KC615)",
+      "name_sc": "太平道 (KC615)",
+      "lat": "22.319953",
+      "long": "114.173591"
+    },
+    {
+      "stop": "71429CEA8EA90958",
+      "name_en": "MONG KOK STATION (MK621)",
+      "name_tc": "旺角站 (MK621)",
+      "name_sc": "旺角站 (MK621)",
+      "lat": "22.319454",
+      "long": "114.170828"
+    },
+    {
+      "stop": "9364661BEAC5B8D0",
+      "name_en": "PEI HO STREET SHAM SHUI PO (SS638)",
+      "name_tc": "深水埗北河街 (SS638)",
+      "name_sc": "深水埗北河街 (SS638)",
+      "lat": "22.328543",
+      "long": "114.160750"
+    },
+    {
+      "stop": "8D386F5D210C3439",
+      "name_en": "SHEK KIP MEI STREET (SS642)",
+      "name_tc": "石硤尾街 (SS642)",
+      "name_sc": "石硖尾街 (SS642)",
+      "lat": "22.327142",
+      "long": "114.162550"
+    },
+    {
+      "stop": "BD06457129045F1D",
+      "name_en": "MONG KOK STATION (MK372)",
+      "name_tc": "旺角站 (MK372)",
+      "name_sc": "旺角站 (MK372)",
+      "lat": "22.319696",
+      "long": "114.170788"
+    }
+  ]
+}

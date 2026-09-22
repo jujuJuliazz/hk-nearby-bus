@@ -1,0 +1,63 @@
+{
+  "type": "RouteList",
+  "version": "1.0",
+  "generated_timestamp": "2026-09-22T21:07:33+08:00",
+  "_note": "truncated; full has 1600 route directions",
+  "data": [
+    {
+      "route": "1",
+      "bound": "O",
+      "service_type": "1",
+      "orig_en": "CHUK YUEN ESTATE",
+      "orig_tc": "竹園邨",
+      "orig_sc": "竹园邨",
+      "dest_en": "STAR FERRY",
+      "dest_tc": "尖沙咀碼頭",
+      "dest_sc": "尖沙咀码头"
+    },
+    {
+      "route": "1",
+      "bound": "I",
+      "service_type": "1",
+      "orig_en": "STAR FERRY",
+      "orig_tc": "尖沙咀碼頭",
+      "orig_sc": "尖沙咀码头",
+      "dest_en": "CHUK YUEN ESTATE",
+      "dest_tc": "竹園邨",
+      "dest_sc": "竹园邨"
+    },
+    {
+      "route": "1A",
+      "bound": "O",
+      "service_type": "1",
+      "orig_en": "SAU MAU PING (CENTRAL)",
+      "orig_tc": "中秀茂坪",
+      "orig_sc": "中秀茂坪",
+      "dest_en": "STAR FERRY",
+      "dest_tc": "尖沙咀碼頭",
+      "dest_sc": "尖沙咀码头"
+    },
+    {
+      "route": "1A",
+      "bound": "I",
+      "service_type": "1",
+      "orig_en": "STAR FERRY",
+      "orig_tc": "尖沙咀碼頭",
+      "orig_sc": "尖沙咀码头",
+      "dest_en": "SAU MAU PING (CENTRAL)",
+      "dest_tc": "中秀茂坪",
+      "dest_sc": "中秀茂坪"
+    },
+    {
+      "route": "2",
+      "bound": "O",
+      "service_type": "1",
+      "orig_en": "STAR FERRY",
+      "orig_tc": "尖沙咀碼頭",
+      "orig_sc": "尖沙咀码头",
+      "dest_en": "CHEUNG SHA WAN (SO UK ESTATE)",
+      "dest_tc": "長沙灣(蘇屋邨)",
+      "dest_sc": "长沙湾(苏屋邨)"
+    }
+  ]
+}

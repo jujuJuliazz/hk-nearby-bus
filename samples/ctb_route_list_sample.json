@@ -1,0 +1,63 @@
+{
+  "type": "RouteList",
+  "version": "2.0",
+  "generated_timestamp": "2026-09-22T21:06:47+08:00",
+  "_note": "truncated; full has 406 routes",
+  "data": [
+    {
+      "co": "CTB",
+      "route": "1",
+      "orig_tc": "中環 (港澳碼頭)",
+      "orig_en": "Central (Macao Ferry)",
+      "dest_tc": "跑馬地 (上)",
+      "dest_en": "Happy Valley (Upper)",
+      "orig_sc": "中环 (港澳码头)",
+      "dest_sc": "跑马地 (上)",
+      "data_timestamp": "2026-09-22T05:00:02+08:00"
+    },
+    {
+      "co": "CTB",
+      "route": "10",
+      "orig_tc": "堅尼地城",
+      "orig_en": "Kennedy Town",
+      "dest_tc": "北角碼頭",
+      "dest_en": "North Point Ferry Pier",
+      "orig_sc": "坚尼地城",
+      "dest_sc": "北角码头",
+      "data_timestamp": "2026-09-22T05:00:02+08:00"
+    },
+    {
+      "co": "CTB",
+      "route": "101",
+      "orig_tc": "堅尼地城",
+      "orig_en": "Kennedy Town",
+      "dest_tc": "觀塘 (裕民坊)",
+      "dest_en": "Kwun Tong (Yue Man Square)",
+      "orig_sc": "坚尼地城",
+      "dest_sc": "观塘 (裕民坊)",
+      "data_timestamp": "2026-09-22T05:00:02+08:00"
+    },
+    {
+      "co": "CTB",
+      "route": "101R",
+      "orig_tc": "跑馬地馬場",
+      "orig_en": "Happy Valley Racecourse",
+      "dest_tc": "觀塘 (裕民坊)",
+      "dest_en": "Kwun Tong (Yue Man Square)",
+      "orig_sc": "跑马地马场",
+      "dest_sc": "观塘 (裕民坊)",
+      "data_timestamp": "2026-09-22T05:00:02+08:00"
+    },
+    {
+      "co": "CTB",
+      "route": "101X",
+      "orig_tc": "堅尼地城",
+      "orig_en": "Kennedy Town",
+      "dest_tc": "觀塘 (裕民坊)",
+      "dest_en": "Kwun Tong (Yue Man Square)",
+      "orig_sc": "坚尼地城",
+      "dest_sc": "观塘 (裕民坊)",
+      "data_timestamp": "2026-09-22T05:00:02+08:00"
+    }
+  ]
+}

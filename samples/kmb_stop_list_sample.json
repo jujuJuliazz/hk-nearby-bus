@@ -1,0 +1,48 @@
+{
+  "type": "StopList",
+  "version": "1.0",
+  "generated_timestamp": "2026-09-22T21:06:40+08:00",
+  "_note": "truncated sample; full list has 6741 stops (~1.2MB)",
+  "data": [
+    {
+      "stop": "18492910339410B1",
+      "name_en": "CHUK YUEN ESTATE BUS TERMINUS (WT916)",
+      "name_tc": "竹園邨總站 (WT916)",
+      "name_sc": "竹园邨总站 (WT916)",
+      "lat": "22.345415",
+      "long": "114.192640"
+    },
+    {
+      "stop": "9ED7E93749ABAE67",
+      "name_en": "WING YUEN HOUSE, CHUK YUEN SOUTH ESTATE (WT418)",
+      "name_tc": "竹園南邨榮園樓 (WT418)",
+      "name_sc": "竹园南邨荣园楼 (WT418)",
+      "lat": "22.345076",
+      "long": "114.190023"
+    },
+    {
+      "stop": "9583BCF159B682BA",
+      "name_en": "MA CHAI HANG RECREATION GROUND (WT426)",
+      "name_tc": "馬仔坑遊樂場 (WT426)",
+      "name_sc": "马仔坑游乐场 (WT426)",
+      "lat": "22.344296",
+      "long": "114.187763"
+    },
+    {
+      "stop": "D360B3EBF155C15A",
+      "name_en": "MORSE PARK (WT105)",
+      "name_tc": "摩士公園 (WT105)",
+      "name_sc": "摩士公园 (WT105)",
+      "lat": "22.339876",
+      "long": "114.189506"
+    },
+    {
+      "stop": "713BF17AF24FE4DA",
+      "name_en": "MORSE PARK SPORTS CENTRE (WT106)",
+      "name_tc": "摩士公園體育館 (WT106)",
+      "name_sc": "摩士公园体育馆 (WT106)",
+      "lat": "22.338347",
+      "long": "114.189704"
+    }
+  ]
+}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="附近巴士" />
+  <title>附近巴士 · 幾分鐘到</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg: #f4f7f6;
+      --card: #fff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --teal: #0f766e;
+      --teal-soft: #ccfbf1;
+      --line: #e2e8f0;
+      --warn: #c2410c;
+      --ok: #059669;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang HK", "Noto Sans TC", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100dvh;
+    }
+    .app {
+      max-width: 560px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 12px calc(16px + env(safe-area-inset-bottom));
+      gap: 10px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 760;
+      letter-spacing: -0.02em;
+    }
+    header p { margin: 4px 0 0; color: var(--muted); font-size: 0.85rem; }
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    button, .chip-btn {
+      appearance: none;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 0.9rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .primary { background: var(--teal); color: #fff; }
+    .ghost { background: var(--card); color: var(--ink); border: 1px solid var(--line); }
+    .status {
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+    #map {
+      height: 240px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      background: #dbe7e4;
+    }
+    .list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: auto;
+    }
+    .stop {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px 12px 10px;
+    }
+    .stop-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .stop-name { font-weight: 700; font-size: 1rem; }
+    .dist {
+      color: var(--teal);
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+      background: var(--teal-soft);
+      border-radius: 999px;
+      padding: 4px 8px;
+    }
+    .etas { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .eta-row {
+      display: grid;
+      grid-template-columns: 56px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      padding: 8px;
+      border-radius: 12px;
+      background: #f8fafc;
+    }
+    .route {
+      font-weight: 800;
+      color: var(--teal);
+      font-size: 1.05rem;
+    }
+    .dest { font-size: 0.82rem; color: var(--muted); line-height: 1.3; }
+    .mins {
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--ok);
+      font-size: 0.95rem;
+      text-align: right;
+    }
+    .mins.soon { color: var(--warn); }
+    .mins.gone { color: #94a3b8; font-weight: 600; }
+    .empty, .error {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .legend { font-size: 0.75rem; color: var(--muted); }
+    footer { font-size: 0.72rem; color: var(--muted); line-height: 1.45; }
+    .leaflet-container { font: inherit; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>附近巴士</h1>
+      <p>看附近站點，幾分鐘有車到</p>
+    </header>
+
+    <div class="toolbar">
+      <button class="primary" id="locateBtn" type="button">定位附近</button>
+      <button class="ghost" id="refreshBtn" type="button">刷新到站</button>
+      <label class="ghost" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px">
+        範圍
+        <select id="radius" style="border:0;background:transparent;font-weight:700">
+          <option value="300">300 米</option>
+          <option value="500" selected>500 米</option>
+          <option value="800">800 米</option>
+        </select>
+      </label>
+    </div>
+    <div class="status" id="status">先點「定位附近」授權位置</div>
+    <div id="map"></div>
+    <div class="list" id="list">
+      <div class="empty">定位後會顯示附近九巴站，以及各線預計到站時間。</div>
+    </div>
+    <p class="legend">第一版：九巴 / 龍運實時到站。城巴與「去香港各區要多久」下一版再加。</p>
+    <footer>數據來自香港政府開放數據（KMB ETA）。到站時間僅供參考。</footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const state = {
+      pos: null,
+      stops: null,
+      nearby: [],
+      map: null,
+      userMarker: null,
+      stopLayer: null,
+    };
+
+    const statusEl = document.getElementById("status");
+    const listEl = document.getElementById("list");
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+
+    function haversine(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = (d) => d * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+      return 2 * R * Math.asin(Math.sqrt(a));
+    }
+
+    function minsUntil(iso) {
+      if (!iso) return null;
+      const diff = (new Date(iso).getTime() - Date.now()) / 60000;
+      return diff;
+    }
+
+    function formatMins(m) {
+      if (m == null) return { text: "暫無", cls: "gone" };
+      if (m <= 0) return { text: "即將到", cls: "soon" };
+      if (m < 1) return { text: "<1 分", cls: "soon" };
+      const n = Math.round(m);
+      if (n <= 3) return { text: `${n} 分`, cls: "soon" };
+      return { text: `${n} 分`, cls: "" };
+    }
+
+    function initMap() {
+      state.map = L.map("map", { zoomControl: false }).setView([22.3193, 114.1694], 12);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(state.map);
+      L.control.zoom({ position: "bottomright" }).addTo(state.map);
+      state.stopLayer = L.layerGroup().addTo(state.map);
+    }
+
+    async function loadStops() {
+      if (state.stops) return state.stops;
+      setStatus("載入巴士站資料…");
+      const res = await fetch("./stops-kmb.json");
+      state.stops = await res.json();
+      return state.stops;
+    }
+
+    async function fetchEta(stopId) {
+      const url = `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("eta failed");
+      const json = await res.json();
+      const rows = json.data || [];
+      // group by route+dest, keep soonest few
+      const best = new Map();
+      for (const row of rows) {
+        const key = `${row.route}|${row.dest_tc || row.dest_en}`;
+        const m = minsUntil(row.eta);
+        const prev = best.get(key);
+        if (!prev || (m != null && (prev.mins == null || m < prev.mins))) {
+          best.set(key, {
+            route: row.route,
+            dest: row.dest_tc || row.dest_en,
+            mins: m,
+            eta: row.eta,
+            rmk: row.rmk_tc || ""
+          });
+        }
+      }
+      return [...best.values()].sort((a, b) => {
+        if (a.mins == null) return 1;
+        if (b.mins == null) return -1;
+        return a.mins - b.mins;
+      }).slice(0, 8);
+    }
+
+    function renderMap() {
+      state.stopLayer.clearLayers();
+      if (state.pos) {
+        if (state.userMarker) state.map.removeLayer(state.userMarker);
+        state.userMarker = L.circleMarker([state.pos.lat, state.pos.lng], {
+          radius: 8,
+          color: "#fff",
+          weight: 2,
+          fillColor: "#f97316",
+          fillOpacity: 1
+        }).addTo(state.map).bindPopup("你在這裡");
+      }
+      for (const s of state.nearby) {
+        L.circleMarker([s.lat, s.lng], {
+          radius: 7,
+          color: "#0f766e",
+          weight: 2,
+          fillColor: "#5eead4",
+          fillOpacity: 0.9
+        }).addTo(state.stopLayer).bindPopup(`${s.name}<br>${Math.round(s.dist)} 米`);
+      }
+      if (state.pos) {
+        const r = Number(document.getElementById("radius").value);
+        state.map.setView([state.pos.lat, state.pos.lng], r <= 300 ? 17 : r <= 500 ? 16 : 15);
+      }
+    }
+
+    function renderList() {
+      if (!state.nearby.length) {
+        listEl.innerHTML = `<div class="empty">附近 ${document.getElementById("radius").value} 米內沒有找到九巴站。可加大範圍再試。</div>`;
+        return;
+      }
+      listEl.innerHTML = state.nearby.map((s) => {
+        const etas = (s.etas || []).map((e) => {
+          const f = formatMins(e.mins);
+          return `<div class="eta-row">
+            <div class="route">${e.route}</div>
+            <div class="dest">${e.dest}${e.rmk ? ` · ${e.rmk}` : ""}</div>
+            <div class="mins ${f.cls}">${f.text}</div>
+          </div>`;
+        }).join("") || `<div class="dest" style="padding:6px 2px">暫無到站資料</div>`;
+        return `<article class="stop" data-id="${s.id}">
+          <div class="stop-head">
+            <div class="stop-name">${s.name}</div>
+            <div class="dist">${Math.round(s.dist)} 米</div>
+          </div>
+          <div class="etas">${etas}</div>
+        </article>`;
+      }).join("");
+    }
+
+    async function refreshNearby() {
+      if (!state.pos) {
+        setStatus("請先定位");
+        return;
+      }
+      const stops = await loadStops();
+      const radius = Number(document.getElementById("radius").value);
+      const nearby = [];
+      for (const s of stops) {
+        const dist = haversine(state.pos.lat, state.pos.lng, s.lat, s.lng);
+        if (dist <= radius) nearby.push({ ...s, dist });
+      }
+      nearby.sort((a, b) => a.dist - b.dist);
+      state.nearby = nearby.slice(0, 12);
+      setStatus(`附近 ${state.nearby.length} 個站，正在拉取到站時間…`);
+      renderMap();
+      renderList();
+
+      await Promise.all(state.nearby.map(async (s) => {
+        try {
+          s.etas = await fetchEta(s.id);
+        } catch {
+          s.etas = [];
+        }
+      }));
+      setStatus(`已更新 · 範圍 ${radius} 米 · ${new Date().toLocaleTimeString("zh-HK")}`);
+      renderList();
+    }
+
+    function locate() {
+      if (!navigator.geolocation) {
+        setStatus("這個瀏覽器不支持定位");
+        return;
+      }
+      setStatus("正在獲取位置…");
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          state.pos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setStatus(`已定位（精度約 ${Math.round(pos.coords.accuracy)} 米）`);
+          await refreshNearby();
+        },
+        (err) => {
+          setStatus(err.code === 1 ? "需要允許位置權限才能找附近站" : "定位失敗，請重試");
+        },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
+      );
+    }
+
+    document.getElementById("locateBtn").addEventListener("click", locate);
+    document.getElementById("refreshBtn").addEventListener("click", () => refreshNearby());
+    document.getElementById("radius").addEventListener("change", () => refreshNearby());
+
+    initMap();
+  </script>
+</body>
+</html>
