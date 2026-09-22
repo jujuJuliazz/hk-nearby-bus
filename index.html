@@ -144,6 +144,7 @@
 
     <div class="toolbar">
       <button class="primary" id="locateBtn" type="button">定位附近</button>
+      <button class="ghost" id="pickBtn" type="button">地圖選點</button>
       <button class="ghost" id="refreshBtn" type="button">刷新到站</button>
       <label class="ghost" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px">
         範圍
@@ -154,10 +155,10 @@
         </select>
       </label>
     </div>
-    <div class="status" id="status">先點「定位附近」授權位置</div>
+    <div class="status" id="status">可「定位附近」，或點「地圖選點」後在地圖上點一下 / 拖動橙色標記</div>
     <div id="map" role="img" aria-label="附近巴士站地图"></div>
     <div class="list" id="list">
-      <div class="empty">定位後會顯示附近九巴站，以及各線預計到站時間。</div>
+      <div class="empty">定位或地圖選點後，會顯示附近九巴站與各線預計到站時間。</div>
     </div>
     <p class="legend">第一版：九巴 / 龍運實時到站。城巴與「去香港各區要多久」下一版再加。</p>
     <footer>數據來自香港政府開放數據（KMB ETA）。到站時間僅供參考。</footer>
@@ -172,6 +173,7 @@
       map: null,
       userMarker: null,
       stopLayer: null,
+      pickMode: false,
     };
 
     const statusEl = document.getElementById("status");
@@ -205,7 +207,6 @@
 
     function initMap() {
       state.map = L.map("map", { zoomControl: false }).setView([22.3193, 114.1694], 12);
-      // Prefer Carto (often reachable in CN) then Esri; OSM last.
       const tiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
         subdomains: "abcd",
@@ -223,6 +224,45 @@
       tiles.addTo(state.map);
       L.control.zoom({ position: "bottomright" }).addTo(state.map);
       state.stopLayer = L.layerGroup().addTo(state.map);
+
+      // Click map to place / move pin
+      state.map.on("click", async (e) => {
+        if (!state.pickMode && state.pos) {
+          // still allow click-to-move once a position exists
+        }
+        await setManualPos(e.latlng.lat, e.latlng.lng, true);
+      });
+    }
+
+    function ensurePin() {
+      if (state.userMarker) return state.userMarker;
+      state.userMarker = L.marker([22.3193, 114.1694], {
+        draggable: true,
+        autoPan: true,
+        title: "拖動我選位置"
+      }).addTo(state.map);
+      state.userMarker.bindPopup("拖動我，或點地圖其他位置");
+      state.userMarker.on("dragend", async () => {
+        const ll = state.userMarker.getLatLng();
+        await setManualPos(ll.lat, ll.lng, false);
+      });
+      return state.userMarker;
+    }
+
+    async function setManualPos(lat, lng, moveView) {
+      state.pos = { lat, lng, source: "manual" };
+      const pin = ensurePin();
+      pin.setLatLng([lat, lng]);
+      if (moveView) {
+        const r = Number(document.getElementById("radius").value);
+        state.map.setView([lat, lng], r <= 300 ? 17 : r <= 500 ? 16 : 15);
+      }
+      setStatus(`已選位置 · 地圖選點 · ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      state.pickMode = false;
+      document.getElementById("pickBtn").textContent = "地圖選點";
+      document.getElementById("pickBtn").classList.remove("primary");
+      document.getElementById("pickBtn").classList.add("ghost");
+      await refreshNearby({ keepView: !moveView });
     }
 
     async function loadStops() {
@@ -239,7 +279,6 @@
       if (!res.ok) throw new Error("eta failed");
       const json = await res.json();
       const rows = json.data || [];
-      // group by route+dest, keep soonest few
       const best = new Map();
       for (const row of rows) {
         const key = `${row.route}|${row.dest_tc || row.dest_en}`;
@@ -262,17 +301,12 @@
       }).slice(0, 8);
     }
 
-    function renderMap() {
+    function renderMap(opts = {}) {
       state.stopLayer.clearLayers();
       if (state.pos) {
-        if (state.userMarker) state.map.removeLayer(state.userMarker);
-        state.userMarker = L.circleMarker([state.pos.lat, state.pos.lng], {
-          radius: 8,
-          color: "#fff",
-          weight: 2,
-          fillColor: "#f97316",
-          fillOpacity: 1
-        }).addTo(state.map).bindPopup("你在這裡");
+        const pin = ensurePin();
+        pin.setLatLng([state.pos.lat, state.pos.lng]);
+        pin.setPopupContent(state.pos.source === "gps" ? "GPS 定位（可拖動調整）" : "地圖選點（可拖動）");
       }
       for (const s of state.nearby) {
         L.circleMarker([s.lat, s.lng], {
@@ -283,7 +317,7 @@
           fillOpacity: 0.9
         }).addTo(state.stopLayer).bindPopup(`${s.name}<br>${Math.round(s.dist)} 米`);
       }
-      if (state.pos) {
+      if (state.pos && !opts.keepView) {
         const r = Number(document.getElementById("radius").value);
         state.map.setView([state.pos.lat, state.pos.lng], r <= 300 ? 17 : r <= 500 ? 16 : 15);
       }
@@ -291,7 +325,7 @@
 
     function renderList() {
       if (!state.nearby.length) {
-        listEl.innerHTML = `<div class="empty">附近 ${document.getElementById("radius").value} 米內沒有找到九巴站。可加大範圍再試。</div>`;
+        listEl.innerHTML = `<div class="empty">附近 ${document.getElementById("radius").value} 米內沒有找到九巴站。可加大範圍或拖動標記再試。</div>`;
         return;
       }
       listEl.innerHTML = state.nearby.map((s) => {
@@ -313,9 +347,9 @@
       }).join("");
     }
 
-    async function refreshNearby() {
+    async function refreshNearby(opts = {}) {
       if (!state.pos) {
-        setStatus("請先定位");
+        setStatus("請先定位，或點「地圖選點」後在地圖上選位置");
         return;
       }
       const stops = await loadStops();
@@ -328,7 +362,7 @@
       nearby.sort((a, b) => a.dist - b.dist);
       state.nearby = nearby.slice(0, 12);
       setStatus(`附近 ${state.nearby.length} 個站，正在拉取到站時間…`);
-      renderMap();
+      renderMap(opts);
       renderList();
 
       await Promise.all(state.nearby.map(async (s) => {
@@ -338,32 +372,62 @@
           s.etas = [];
         }
       }));
-      setStatus(`已更新 · 範圍 ${radius} 米 · ${new Date().toLocaleTimeString("zh-HK")}`);
+      const src = state.pos.source === "gps" ? "GPS" : "地圖選點";
+      setStatus(`已更新 · ${src} · 範圍 ${radius} 米 · ${new Date().toLocaleTimeString("zh-HK")}`);
       renderList();
     }
 
     function locate() {
       if (!navigator.geolocation) {
-        setStatus("這個瀏覽器不支持定位");
+        setStatus("這個瀏覽器不支持定位；可用「地圖選點」");
         return;
       }
       setStatus("正在獲取位置…");
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
-          state.pos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setStatus(`已定位（精度約 ${Math.round(pos.coords.accuracy)} 米）`);
+          state.pos = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            source: "gps"
+          };
+          setStatus(`已定位（精度約 ${Math.round(pos.coords.accuracy)} 米，可拖動標記微調）`);
           await refreshNearby();
         },
         (err) => {
-          setStatus(err.code === 1 ? "需要允許位置權限才能找附近站" : "定位失敗，請重試");
+          setStatus(err.code === 1
+            ? "未授權定位。可改點「地圖選點」，在地圖上選位置"
+            : "定位失敗。可改用「地圖選點」");
         },
         { enableHighAccuracy: true, timeout: 12000, maximumAge: 15000 }
       );
     }
 
+    function togglePickMode() {
+      state.pickMode = !state.pickMode;
+      const btn = document.getElementById("pickBtn");
+      if (state.pickMode) {
+        btn.textContent = "點地圖選位置…";
+        btn.classList.add("primary");
+        btn.classList.remove("ghost");
+        setStatus("請在地圖上點一下選位置；之後還可拖動橙色標記");
+        // Place a default pin at map center so user can drag immediately
+        const c = state.map.getCenter();
+        ensurePin().setLatLng(c);
+        if (!state.pos) {
+          state.pos = { lat: c.lat, lng: c.lng, source: "manual" };
+        }
+      } else {
+        btn.textContent = "地圖選點";
+        btn.classList.remove("primary");
+        btn.classList.add("ghost");
+        setStatus(state.pos ? "可繼續拖動橙色標記調整位置" : "可「定位附近」，或再點「地圖選點」");
+      }
+    }
+
     document.getElementById("locateBtn").addEventListener("click", locate);
-    document.getElementById("refreshBtn").addEventListener("click", () => refreshNearby());
-    document.getElementById("radius").addEventListener("change", () => refreshNearby());
+    document.getElementById("pickBtn").addEventListener("click", togglePickMode);
+    document.getElementById("refreshBtn").addEventListener("click", () => refreshNearby({ keepView: true }));
+    document.getElementById("radius").addEventListener("change", () => refreshNearby({ keepView: true }));
 
     initMap();
   </script>
