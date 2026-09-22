@@ -88,6 +88,13 @@
       align-items: flex-start;
     }
     .stop-name { font-weight: 700; font-size: 1rem; }
+    .stop-meta { display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .co-badge {
+      display:inline-block; width:fit-content;
+      font-size:0.7rem; font-weight:700; padding:2px 7px; border-radius:999px;
+    }
+    .co-badge.kmb { background:#dbeafe; color:#1d4ed8; }
+    .co-badge.ctb { background:#ffe4e6; color:#be123c; }
     .dist {
       color: var(--teal);
       font-size: 0.8rem;
@@ -160,8 +167,8 @@
     <div class="list" id="list">
       <div class="empty">定位或地圖選點後，會顯示附近九巴站與各線預計到站時間。</div>
     </div>
-    <p class="legend">第一版：九巴 / 龍運實時到站。城巴與「去香港各區要多久」下一版再加。</p>
-    <footer>數據來自香港政府開放數據（KMB ETA）。到站時間僅供參考。</footer>
+    <p class="legend">已支持九巴 / 龍運 + 城巴（含前新巴）實時到站。「去香港各區要多久」下一版再加。</p>
+    <footer>數據來自香港政府開放數據（KMB / Citybus ETA）。到站時間僅供參考。</footer>
   </div>
 
   <script src="./vendor/leaflet/leaflet.js"></script>
@@ -267,18 +274,33 @@
 
     async function loadStops() {
       if (state.stops) return state.stops;
-      setStatus("載入巴士站資料…");
-      const res = await fetch("./stops-kmb.json");
-      state.stops = await res.json();
+      setStatus("載入九巴 / 城巴站資料…");
+      const [kmbRes, ctbRes] = await Promise.all([
+        fetch("./stops-kmb.json"),
+        fetch("./stops-ctb.json")
+      ]);
+      const kmb = await kmbRes.json();
+      const ctb = await ctbRes.json();
+      state.stops = [
+        ...kmb.map((s) => ({ ...s, co: "KMB", routes: s.routes || null })),
+        ...ctb.map((s) => ({ ...s, co: "CTB" }))
+      ];
       return state.stops;
     }
 
-    async function fetchEta(stopId) {
+    function sortEtas(list) {
+      return list.sort((a, b) => {
+        if (a.mins == null) return 1;
+        if (b.mins == null) return -1;
+        return a.mins - b.mins;
+      }).slice(0, 10);
+    }
+
+    async function fetchEtaKmb(stopId) {
       const url = `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${stopId}`;
       const res = await fetch(url);
-      if (!res.ok) throw new Error("eta failed");
-      const json = await res.json();
-      const rows = json.data || [];
+      if (!res.ok) throw new Error("kmb eta failed");
+      const rows = (await res.json()).data || [];
       const best = new Map();
       for (const row of rows) {
         const key = `${row.route}|${row.dest_tc || row.dest_en}`;
@@ -290,15 +312,46 @@
             dest: row.dest_tc || row.dest_en,
             mins: m,
             eta: row.eta,
-            rmk: row.rmk_tc || ""
+            rmk: row.rmk_tc || "",
+            co: "KMB"
           });
         }
       }
-      return [...best.values()].sort((a, b) => {
-        if (a.mins == null) return 1;
-        if (b.mins == null) return -1;
-        return a.mins - b.mins;
-      }).slice(0, 8);
+      return sortEtas([...best.values()]);
+    }
+
+    async function fetchEtaCtb(stop) {
+      const routes = (stop.routes || []).slice(0, 8);
+      const best = new Map();
+      await Promise.all(routes.map(async (route) => {
+        try {
+          const url = `https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${stop.id}/${encodeURIComponent(route)}`;
+          const res = await fetch(url);
+          if (!res.ok) return;
+          const rows = (await res.json()).data || [];
+          for (const row of rows) {
+            const key = `${row.route}|${row.dest_tc || row.dest_en}`;
+            const m = minsUntil(row.eta);
+            const prev = best.get(key);
+            if (!prev || (m != null && (prev.mins == null || m < prev.mins))) {
+              best.set(key, {
+                route: row.route,
+                dest: row.dest_tc || row.dest_en,
+                mins: m,
+                eta: row.eta,
+                rmk: row.rmk_tc || "",
+                co: "CTB"
+              });
+            }
+          }
+        } catch (_) {}
+      }));
+      return sortEtas([...best.values()]);
+    }
+
+    async function fetchEta(stop) {
+      if (stop.co === "CTB") return fetchEtaCtb(stop);
+      return fetchEtaKmb(stop.id);
     }
 
     function renderMap(opts = {}) {
@@ -309,13 +362,14 @@
         pin.setPopupContent(state.pos.source === "gps" ? "GPS 定位（可拖動調整）" : "地圖選點（可拖動）");
       }
       for (const s of state.nearby) {
+        const isCtb = s.co === "CTB";
         L.circleMarker([s.lat, s.lng], {
           radius: 7,
-          color: "#0f766e",
+          color: isCtb ? "#be123c" : "#0f766e",
           weight: 2,
-          fillColor: "#5eead4",
+          fillColor: isCtb ? "#fb7185" : "#5eead4",
           fillOpacity: 0.9
-        }).addTo(state.stopLayer).bindPopup(`${s.name}<br>${Math.round(s.dist)} 米`);
+        }).addTo(state.stopLayer).bindPopup(`${isCtb ? '城巴' : '九巴'} · ${s.name}<br>${Math.round(s.dist)} 米`);
       }
       if (state.pos && !opts.keepView) {
         const r = Number(document.getElementById("radius").value);
@@ -325,7 +379,7 @@
 
     function renderList() {
       if (!state.nearby.length) {
-        listEl.innerHTML = `<div class="empty">附近 ${document.getElementById("radius").value} 米內沒有找到九巴站。可加大範圍或拖動標記再試。</div>`;
+        listEl.innerHTML = `<div class="empty">附近 ${document.getElementById("radius").value} 米內沒有找到九巴 / 城巴站。可加大範圍或拖動標記再試。</div>`;
         return;
       }
       listEl.innerHTML = state.nearby.map((s) => {
@@ -337,9 +391,14 @@
             <div class="mins ${f.cls}">${f.text}</div>
           </div>`;
         }).join("") || `<div class="dest" style="padding:6px 2px">暫無到站資料</div>`;
+        const coLabel = s.co === "CTB" ? "城巴" : "九巴";
+        const coCls = s.co === "CTB" ? "ctb" : "kmb";
         return `<article class="stop" data-id="${s.id}">
           <div class="stop-head">
-            <div class="stop-name">${s.name}</div>
+            <div class="stop-meta">
+              <span class="co-badge ${coCls}">${coLabel}</span>
+              <div class="stop-name">${s.name}</div>
+            </div>
             <div class="dist">${Math.round(s.dist)} 米</div>
           </div>
           <div class="etas">${etas}</div>
@@ -367,7 +426,7 @@
 
       await Promise.all(state.nearby.map(async (s) => {
         try {
-          s.etas = await fetchEta(s.id);
+          s.etas = await fetchEta(s);
         } catch {
           s.etas = [];
         }
