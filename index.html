@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-title" content="附近巴士" />
   <title>附近巴士 · 幾分鐘到</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="./vendor/leaflet/leaflet.css" />
   <style>
     :root {
       --bg: #f4f7f6;
@@ -155,7 +155,7 @@
       </label>
     </div>
     <div class="status" id="status">先點「定位附近」授權位置</div>
-    <div id="map"></div>
+    <div id="map" role="img" aria-label="附近巴士站地图"></div>
     <div class="list" id="list">
       <div class="empty">定位後會顯示附近九巴站，以及各線預計到站時間。</div>
     </div>
@@ -163,7 +163,7 @@
     <footer>數據來自香港政府開放數據（KMB ETA）。到站時間僅供參考。</footer>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./vendor/leaflet/leaflet.js"></script>
   <script>
     const state = {
       pos: null,
@@ -205,10 +205,22 @@
 
     function initMap() {
       state.map = L.map("map", { zoomControl: false }).setView([22.3193, 114.1694], 12);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      // Prefer Carto (often reachable in CN) then Esri; OSM last.
+      const tiles = L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         maxZoom: 19,
-        attribution: "&copy; OpenStreetMap"
-      }).addTo(state.map);
+        subdomains: "abcd",
+        attribution: "&copy; OpenStreetMap &copy; CARTO"
+      });
+      tiles.on("tileerror", () => {
+        if (state._tileFallback) return;
+        state._tileFallback = true;
+        state.map.removeLayer(tiles);
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+          maxZoom: 19,
+          attribution: "Esri"
+        }).addTo(state.map);
+      });
+      tiles.addTo(state.map);
       L.control.zoom({ position: "bottomright" }).addTo(state.map);
       state.stopLayer = L.layerGroup().addTo(state.map);
     }

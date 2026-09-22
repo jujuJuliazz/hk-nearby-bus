@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HK Nearby Bus — browser fetch prototype (KMB)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 1rem; max-width: 40rem; }
+    .stop { border: 1px solid #ccc; border-radius: 8px; padding: .75rem; margin: .75rem 0; }
+    .meta { color: #555; font-size: .9rem; }
+    button { font-size: 1rem; padding: .5rem 1rem; }
+    #status { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Nearby KMB (browser prototype)</h1>
+  <p class="meta">Calls <code>data.etabus.gov.hk</code> directly (CORS <code>*</code>). Not deployed.</p>
+  <button id="go">Use my location</button>
+  <pre id="status"></pre>
+  <div id="list"></div>
+  <script>
+    const STOP_URL = 'https://data.etabus.gov.hk/v1/transport/kmb/stop';
+    const ETA_URL = (id) => `https://data.etabus.gov.hk/v1/transport/kmb/stop-eta/${id}`;
+    const RADIUS_M = 300;
+    const LIMIT = 6;
+    const statusEl = document.getElementById('status');
+    const listEl = document.getElementById('list');
+    const log = (t) => { statusEl.textContent = t; };
+
+    function haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371000, toR = Math.PI / 180;
+      const dφ = (lat2 - lat1) * toR, dλ = (lon2 - lon1) * toR;
+      const a = Math.sin(dφ/2)**2 + Math.cos(lat1*toR)*Math.cos(lat2*toR)*Math.sin(dλ/2)**2;
+      return 2 * R * Math.asin(Math.sqrt(a));
+    }
+    function minsUntil(iso) {
+      if (!iso) return null;
+      return Math.max(0, Math.round((new Date(iso) - Date.now()) / 60000));
+    }
+
+    async function run(lat, lng) {
+      log('Fetching stop list…');
+      const stopRes = await fetch(STOP_URL, { cache: 'no-store' });
+      if (!stopRes.ok) throw new Error('stop list ' + stopRes.status);
+      const { data: stops } = await stopRes.json();
+      const nearby = stops
+        .map(s => ({ s, d: haversine(lat, lng, +s.lat, +s.long) }))
+        .filter(x => x.d <= RADIUS_M)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, LIMIT);
+      log(`Location ${lat.toFixed(5)}, ${lng.toFixed(5)}\n${nearby.length} stops within ${RADIUS_M}m`);
+      listEl.innerHTML = '';
+      for (const { s, d } of nearby) {
+        const box = document.createElement('div');
+        box.className = 'stop';
+        box.innerHTML = `<strong>${s.name_tc || s.name_en}</strong><div class="meta">${Math.round(d)} m · ${s.stop}</div><div class="etas">Loading…</div>`;
+        listEl.appendChild(box);
+        const etaRes = await fetch(ETA_URL(s.stop), { cache: 'no-store' });
+        const { data: etas } = await etaRes.json();
+        const groups = new Map();
+        for (const e of etas || []) {
+          const key = `${e.route}|${e.dir}|${e.dest_tc || e.dest_en}`;
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(e);
+        }
+        const lines = [];
+        for (const [key, rows] of [...groups.entries()].sort()) {
+          const [route, , dest] = key.split('|');
+          const ms = rows.map(r => minsUntil(r.eta)).filter(m => m !== null);
+          if (!ms.length) continue;
+          lines.push(`<div><b>${route}</b> → ${dest}: ${ms.map(m => m + '′').join(', ')}</div>`);
+        }
+        box.querySelector('.etas').innerHTML = lines.join('') || '(no ETAs)';
+      }
+    }
+
+    document.getElementById('go').onclick = () => {
+      log('Requesting geolocation…');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => run(pos.coords.latitude, pos.coords.longitude).catch(e => log(String(e))),
+        (err) => log('Geolocation error: ' + err.message),
+        { enableHighAccuracy: true, timeout: 15000 }
+      );
+    };
+  </script>
+</body>
+</html>
